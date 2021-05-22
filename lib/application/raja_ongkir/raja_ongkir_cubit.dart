@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter2/domain/raja_ongkir/city/city_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/raja_ongkir_failed.dart';
 import 'package:flutter2/domain/raja_ongkir/raja_ongkir_repository.dart';
@@ -21,6 +22,20 @@ class RajaOngkirCubit extends Cubit<RajaOngkirState> {
       _result.fold(
         (l) => emit(RajaOngkirState.error(l)),
         (r) => emit(RajaOngkirState.onGetProvinceData(r)),
+      );
+    } catch (e) {
+      emit(RajaOngkirState.error(
+          RajaOngkirFailed().copyWith(description: e.toString())));
+    }
+  }
+
+  void getCityDataFromInternet(String provinceId) async {
+    emit(RajaOngkirState.loading());
+    try {
+      final _result = await _iRajaOngkir.getCityData(provinceId);
+      _result.fold(
+        (l) => emit(RajaOngkirState.error(l)),
+        (r) => emit(RajaOngkirState.onGetCityData(r)),
       );
     } catch (e) {
       emit(RajaOngkirState.error(

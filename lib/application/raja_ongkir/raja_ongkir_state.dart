@@ -7,4 +7,6 @@ class RajaOngkirState with _$RajaOngkirState {
   const factory RajaOngkirState.error(RajaOngkirFailed failed) = _Error;
   const factory RajaOngkirState.onGetProvinceData(
       List<ProvinceDataModel> dataModel) = _OnGetProvinceData;
+  const factory RajaOngkirState.onGetCityData(List<CityDataModel> dataModel) =
+      _OnGetCityData;
 }
