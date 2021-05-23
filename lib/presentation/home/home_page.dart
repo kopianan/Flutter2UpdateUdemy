@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       child: ElevatedButton(
         onPressed: () {
           var _request = CostRequestDataModel(
-              courier: "jne", destination: 1, origin: 20, weight: 3000);
+              courier: "tiki,jne,pos", destination: 1, origin: 20, weight: 3000);
           costCubit.getCostDataFromInternet(_request);
         },
         child: Text("Get Ongkir"),

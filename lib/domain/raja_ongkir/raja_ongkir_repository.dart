@@ -8,6 +8,8 @@ import 'package:flutter2/domain/raja_ongkir/raja_ongkir_failed.dart';
 import 'package:flutter2/utils/constants.dart';
 import 'package:injectable/injectable.dart';
 
+import 'cost/result_model.dart';
+
 abstract class IRajaOngkir {
   Future<Either<RajaOngkirFailed, List<ProvinceDataModel>>> getProvinceData();
   Future<Either<RajaOngkirFailed, List<CityDataModel>>> getCityData(
@@ -77,20 +79,66 @@ class RajaOngkirRepository extends IRajaOngkir {
   @override
   Future<Either<RajaOngkirFailed, CostResponseDataModel>> getCost(
       CostRequestDataModel costRequest) async {
-    Response response;
+    List<Response> response;
+
+    List<CostResponseDataModel> listResponseDataModel =
+        <CostResponseDataModel>[];
 
     _dio =
         Dio(BaseOptions(headers: {"key": "d3378ccdaa201c0b0bffbd673aab43c2"}));
+
+    List<String> _courierList = costRequest.courier.split(",");
+
+    final _dioList = _courierList
+        .map((String courier) => _dio.post(
+              Constants.rajaOngkirBaseUrl + "starter/cost",
+              data: costRequest.copyWith(courier: courier),
+            ))
+        .toList();
+
     try {
-      response = await _dio.post(Constants.rajaOngkirBaseUrl + "starter/cost",
-          data: costRequest.toJson());
+      response = await Future.wait(_dioList);
 
-      dynamic _listData = response.data['rajaongkir'];
-      final _result = CostResponseDataModel.fromJson(_listData);
+      response.forEach((element) {
+        dynamic _listData = element.data['rajaongkir'];
+        final _result = CostResponseDataModel.fromJson(_listData);
+        listResponseDataModel.add(_result);
+      });
+   
+      List<ResultModel> temporary = <ResultModel>[];
+      CostResponseDataModel _newData = CostResponseDataModel(
+        destinationDetails: listResponseDataModel.first.destinationDetails,
+        originDetails: listResponseDataModel.first.originDetails,
+      );
 
-      return right(_result);
+      listResponseDataModel.forEach((element) {
+        temporary.addAll(element.results);
+      });
+
+      final _endResult = _newData.copyWith(results: temporary);
+
+      return right(_endResult);
     } on DioError catch (err) {
       return left(checkResponseError(err));
     }
   }
+  // @override
+  // Future<Either<RajaOngkirFailed, CostResponseDataModel>> getCost(
+  //     CostRequestDataModel costRequest) async {
+  //   Response response;
+
+  //   _dio =
+  //       Dio(BaseOptions(headers: {"key": "d3378ccdaa201c0b0bffbd673aab43c2"}));
+  //   try {
+  //     response = await _dio.post(Constants.rajaOngkirBaseUrl + "starter/cost",
+  //         data: costRequest.toJson());
+
+  //     dynamic _listData = response.data['rajaongkir'];
+  //     final _result = CostResponseDataModel.fromJson(_listData);
+
+  //     return right(_result);
+  //   } on DioError catch (err) {
+  //     return left(checkResponseError(err));
+  //   }
+  // }
 }
