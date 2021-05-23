@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter2/application/raja_ongkir/raja_ongkir_cubit.dart';
+import 'package:flutter2/application/raja_ongkir/rajaongkir_controller.dart';
 import 'package:flutter2/domain/raja_ongkir/city/city_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/cost/cost_request_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/province/province_data_model.dart';
@@ -8,6 +9,9 @@ import 'package:flutter2/injection.dart';
 import 'package:flutter2/presentation/result/result_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+
+import 'components/city_dropdown.dart';
+import 'components/province_dropdown.dart';
 
 class HomePage extends StatefulWidget {
   static final String TAG = '/';
@@ -20,9 +24,13 @@ class _HomePageState extends State<HomePage> {
   final provinceCubit = getIt<RajaOngkirCubit>();
   final cityCubit = getIt<RajaOngkirCubit>();
   final costCubit = getIt<RajaOngkirCubit>();
+  final controller = Get.put(RajaongkirController());
 
   final weightController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+
+  late ProvinceDataModel selectedProvince;
+  late CityDataModel selectedCity;
 
   @override
   void initState() {
@@ -102,8 +110,13 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
+          final roCon = Get.put(RajaongkirController());
+
           var _request = CostRequestDataModel(
-              courier: "tiki,jne,pos", destination: 1, origin: 20, weight: 3000);
+              courier: "tiki,jne,pos",
+              destination: int.parse(roCon.getCityDataModel().cityId),
+              origin: 20,
+              weight: int.parse(weightController.text));
           costCubit.getCostDataFromInternet(_request);
         },
         child: Text("Get Ongkir"),
@@ -138,12 +151,8 @@ class _HomePageState extends State<HomePage> {
             duration: Duration(seconds: 2),
           ));
         },
-        onGetProvinceData: (e) {
-          print(e.dataModel);
-        },
-        onGetCityData: (e) {
-          print(e);
-        });
+        onGetProvinceData: (e) {},
+        onGetCityData: (e) {});
   }
 
   provinceCubitBuilder(BuildContext context, RajaOngkirState state) {
@@ -188,68 +197,6 @@ class _HomePageState extends State<HomePage> {
         value: null,
         decoration: InputDecoration(
           hintText: "No Data",
-          border: OutlineInputBorder(),
-        ),
-      ),
-    );
-  }
-}
-
-class ProvinceDropdown extends StatelessWidget {
-  const ProvinceDropdown({
-    Key? key,
-    required this.data,
-    required this.cubit,
-  }) : super(key: key);
-
-  final List<ProvinceDataModel> data;
-  final RajaOngkirCubit cubit;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: DropdownButtonFormField<ProvinceDataModel>(
-        items: data
-            .map((e) => DropdownMenuItem(
-                  child: Text(e.province),
-                  value: e,
-                ))
-            .toList(),
-        value: null,
-        onChanged: (e) {
-          print(e);
-          cubit.getCityDataFromInternet(e!.provinceId);
-        },
-        decoration: InputDecoration(
-          hintText: "Province",
-          border: OutlineInputBorder(),
-        ),
-      ),
-    );
-  }
-}
-
-class CityDropdown extends StatelessWidget {
-  const CityDropdown({Key? key, required this.data}) : super(key: key);
-
-  final List<CityDataModel> data;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: DropdownButtonFormField<CityDataModel>(
-        items: data
-            .map((e) => DropdownMenuItem(
-                  child: Text(e.cityName),
-                  value: e,
-                ))
-            .toList(),
-        value: null,
-        onChanged: (e) {
-          print(e);
-        },
-        decoration: InputDecoration(
-          hintText: "City",
           border: OutlineInputBorder(),
         ),
       ),

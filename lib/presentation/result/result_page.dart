@@ -15,7 +15,7 @@ class _ResultPageState extends State<ResultPage> {
   @override
   void initState() {
     response = Get.arguments as CostResponseDataModel;
-
+    print(response.results.length);
     super.initState();
   }
 
@@ -41,40 +41,46 @@ class _ResultPageState extends State<ResultPage> {
             "Tujuan Kota",
           ),
 
-          Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
-              child: Text(
-                response.results.first.name,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              )),
-
           Expanded(
-            child: ListView.builder(
-                itemCount: response.results.first.costs.length,
-                itemBuilder: (context, index) {
-                  var _cost = response.results.first.costs[index];
-                  return Column(
-                    children: [
-                      ListTile(
-                        title: Text(_cost.service),
-                        subtitle: Text(_cost.description),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _cost.cost.first.value.toString(),
-                              style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
+              child: ListView.builder(
+            itemCount: response.results.length,
+            itemBuilder: (context, index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      margin: EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        response.results[index].name,
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      )),
+                  Column(
+                    children: response.results[index].costs
+                        .map(
+                          (_cost) => ListTile(
+                            title: Text(_cost.service),
+                            subtitle: Text(_cost.description),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _cost.cost.first.value.toString(),
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(_cost.cost.first.etd.toString() + " Hari"),
+                              ],
                             ),
-                            Text(_cost.cost.first.etd.toString() + " Hari"),
-                          ],
-                        ),
-                      ),
-                      Divider()
-                    ],
-                  );
-                }),
-          )
+                          ),
+                        )
+                        .toList(),
+                  )
+                ],
+              );
+            },
+          ))
         ],
       ),
     );
@@ -82,9 +88,6 @@ class _ResultPageState extends State<ResultPage> {
 
   ListTile cityListTile(CityDataModel? city, Color? color, String title) {
     return ListTile(
-      tileColor: color,
-      title: Text(title),
-      subtitle: Text(city!.cityName),
-    );
+        tileColor: color, title: Text(city!.cityName), subtitle: Text(title));
   }
 }
