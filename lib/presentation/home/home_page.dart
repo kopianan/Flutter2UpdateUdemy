@@ -5,6 +5,7 @@ import 'package:flutter2/domain/raja_ongkir/cost/cost_request_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/raja_ongkir_failed.dart';
 import 'package:flutter2/injection.dart';
+import 'package:flutter2/presentation/result/result_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
                   print(e);
                 },
                 onGetCostData: (e) {
-                  print(e);
+                  Get.toNamed(ResultPage.TAG, arguments: e.responseDataModel);
                 });
           }, builder: (context, state) {
             return Column(
@@ -84,26 +85,44 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                Container(
-                  height: 45,
-                  margin: EdgeInsets.all(10),
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      var _request = CostRequestDataModel(
-                          courier: "jne",
-                          destination: 1,
-                          origin: 1,
-                          weight: 3000);
-                      costCubit.getCostDataFromInternet(_request);
-                    },
-                    child: Text("Get Ongkir"),
-                  ),
+                state.maybeMap(
+                  orElse: () => defaultButton(),
+                  loading: (e) => loadingButton(),
                 )
               ],
             );
           }),
         ));
+  }
+
+  Container defaultButton() {
+    return Container(
+      height: 45,
+      margin: EdgeInsets.all(10),
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          var _request = CostRequestDataModel(
+              courier: "jne", destination: 1, origin: 20, weight: 3000);
+          costCubit.getCostDataFromInternet(_request);
+        },
+        child: Text("Get Ongkir"),
+      ),
+    );
+  }
+
+  Container loadingButton() {
+    return Container(
+      height: 45,
+      margin: EdgeInsets.all(10),
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: null,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
   }
 
   rajaOngkirListner(BuildContext context, RajaOngkirState state) {
