@@ -1,6 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter2/domain/raja_ongkir/city/city_data_model.dart';
+import 'package:flutter2/domain/raja_ongkir/cost/cost_request_data_model.dart';
+import 'package:flutter2/domain/raja_ongkir/cost/cost_response_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/raja_ongkir_failed.dart';
 import 'package:flutter2/utils/constants.dart';
@@ -10,6 +12,8 @@ abstract class IRajaOngkir {
   Future<Either<RajaOngkirFailed, List<ProvinceDataModel>>> getProvinceData();
   Future<Either<RajaOngkirFailed, List<CityDataModel>>> getCityData(
       String provinceId);
+  Future<Either<RajaOngkirFailed, CostResponseDataModel>> getCost(
+      CostRequestDataModel costRequest);
 }
 
 @LazySingleton(as: IRajaOngkir)
@@ -68,5 +72,25 @@ class RajaOngkirRepository extends IRajaOngkir {
       return _errorModel;
     } else
       return RajaOngkirFailed();
+  }
+
+  @override
+  Future<Either<RajaOngkirFailed, CostResponseDataModel>> getCost(
+      CostRequestDataModel costRequest) async {
+    Response response;
+
+    _dio =
+        Dio(BaseOptions(headers: {"key": "d3378ccdaa201c0b0bffbd673aab43c2"}));
+    try {
+      response = await _dio.post(Constants.rajaOngkirBaseUrl + "starter/cost",
+          data: costRequest.toJson());
+
+      dynamic _listData = response.data['rajaongkir'];
+      final _result = CostResponseDataModel.fromJson(_listData);
+
+      return right(_result);
+    } on DioError catch (err) {
+      return left(checkResponseError(err));
+    }
   }
 }

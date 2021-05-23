@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter2/application/raja_ongkir/raja_ongkir_cubit.dart';
 import 'package:flutter2/domain/raja_ongkir/city/city_data_model.dart';
+import 'package:flutter2/domain/raja_ongkir/cost/cost_request_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:flutter2/domain/raja_ongkir/raja_ongkir_failed.dart';
 import 'package:flutter2/injection.dart';
@@ -17,6 +18,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final provinceCubit = getIt<RajaOngkirCubit>();
   final cityCubit = getIt<RajaOngkirCubit>();
+  final costCubit = getIt<RajaOngkirCubit>();
+
+  final weightController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -28,23 +33,76 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: Text("Raja Ongkir")),
-        body: Column(
-          children: [
-            BlocProvider(
-              create: (context) => provinceCubit,
-              child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
-                  listener: rajaOngkirListner,
-                  builder: (context, state) =>
-                      provinceCubitBuilder(context, state)),
-            ),
-            BlocProvider(
-              create: (context) => cityCubit,
-              child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
-                  listener: rajaOngkirListner,
-                  builder: (context, state) =>
-                      cityCubitBuilder(context, state)),
-            ),
-          ],
+        body: BlocProvider(
+          create: (context) => costCubit,
+          child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+              listener: (context, state) {
+            state.maybeMap(
+                orElse: () {},
+                loading: (e) {
+                  print("On Loading Get Cost");
+                },
+                error: (e) {
+                  print(e);
+                },
+                onGetCostData: (e) {
+                  print(e);
+                });
+          }, builder: (context, state) {
+            return Column(
+              children: [
+                BlocProvider(
+                  create: (context) => provinceCubit,
+                  child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+                      listener: rajaOngkirListner,
+                      builder: (context, state) =>
+                          provinceCubitBuilder(context, state)),
+                ),
+                BlocProvider(
+                  create: (context) => cityCubit,
+                  child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+                      listener: rajaOngkirListner,
+                      builder: (context, state) =>
+                          cityCubitBuilder(context, state)),
+                ),
+                Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: TextFormField(
+                      controller: weightController,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value.toString().isEmpty)
+                          return "Field can not be empty";
+                        else
+                          return null;
+                      },
+                      decoration: InputDecoration(
+                          hintText: "Weight", border: OutlineInputBorder()),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 45,
+                  margin: EdgeInsets.all(10),
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      var _request = CostRequestDataModel(
+                          courier: "jne",
+                          destination: 1,
+                          origin: 1,
+                          weight: 3000);
+                      costCubit.getCostDataFromInternet(_request);
+                    },
+                    child: Text("Get Ongkir"),
+                  ),
+                )
+              ],
+            );
+          }),
         ));
   }
 
